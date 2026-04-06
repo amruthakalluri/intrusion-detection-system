@@ -1,0 +1,9 @@
+duration,failed_logins,requests,label
+10,0,5,Normal
+12,1,7,Normal
+15,2,10,Normal
+18,3,12,Normal
+20,5,20,Attack
+25,7,30,Attack
+30,10,50,Attack
+35,12,60,Attack
