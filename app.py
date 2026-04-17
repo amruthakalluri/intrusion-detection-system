@@ -3,6 +3,9 @@ import time
 import os
 from collections import Counter
 
+from streamlit_autorefresh import st_autorefresh
+st_autorefresh(interval=2000)
+
 LOG_FILE = "server.log"
 
 st.set_page_config(page_title="ML IDS Dashboard", page_icon="🛡️", layout="wide")
@@ -22,7 +25,7 @@ def read_logs():
         return f.readlines()[-100:]
 
 # ---------------- MAIN LOOP ----------------
-while True:
+
     logs = read_logs()
 
     new_logs = []
@@ -80,5 +83,4 @@ while True:
         for n in normal_logs[-10:]:
             st.text(n)
 
-    time.sleep(2)
-    st.rerun()
+   
