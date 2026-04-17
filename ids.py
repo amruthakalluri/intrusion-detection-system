@@ -17,12 +17,16 @@ y = data["label"]
 model = RandomForestClassifier()
 model.fit(X, y)
 
-print("ML Model Loaded...")
+print(" ML Model Loaded...")
 
 # ---------------- TRACKING ----------------
 failed_attempts = defaultdict(int)
 request_count = defaultdict(list)
 start_time = defaultdict(lambda: time.time())
+
+# 🚨 NEW: Alert cooldown system
+last_alert_time = defaultdict(lambda: 0)
+ALERT_COOLDOWN = 15  # seconds
 
 TIME_WINDOW = 10  # seconds
 
@@ -54,7 +58,7 @@ def process_line(line):
     if status == "FAILED":
         failed_attempts[ip] += 1
 
-    # Track requests
+    # Track requests in time window
     request_count[ip].append(current_time)
     request_count[ip] = [
         t for t in request_count[ip]
@@ -65,7 +69,16 @@ def process_line(line):
     result = ml_detect(ip)
 
     if result == "Attack":
-        print(f" ML ALERT: Intrusion detected from {ip}")
+        # 🚨 Apply cooldown
+        if current_time - last_alert_time[ip] > ALERT_COOLDOWN:
+            alert_msg = f"ALERT: Intrusion detected from {ip}"
+            print(alert_msg)
+
+            # ✅ Write to log file (for Streamlit UI)
+            with open(LOG_FILE, "a") as f:
+                f.write(alert_msg + "\n")
+
+            last_alert_time[ip] = current_time
 
 
 class LogHandler(FileSystemEventHandler):
@@ -84,7 +97,7 @@ class LogHandler(FileSystemEventHandler):
 
 
 if __name__ == "__main__":
-    print("ML Intrusion Detection System Running...")
+    print("Intrusion Detection System Running...")
 
     event_handler = LogHandler()
     observer = Observer()
