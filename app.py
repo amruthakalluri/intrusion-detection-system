@@ -9,36 +9,46 @@ st.set_page_config(page_title="ML IDS", page_icon="🛡️")
 st.title("ML Intrusion Detection System")
 st.write("Real-time monitoring with AI detection")
 
-placeholder = st.empty()
+# ---------------- SESSION STATE ----------------
+if "seen_logs" not in st.session_state:
+    st.session_state.seen_logs = set()
 
-
+# ---------------- READ LOGS ----------------
 def read_logs():
     if not os.path.exists(LOG_FILE):
         return []
     with open(LOG_FILE, "r") as f:
-        return f.readlines()[-30:]
+        return f.readlines()[-50:]  # last 50 logs
 
-
-for _ in range(1000):
+# ---------------- MAIN LOOP ----------------
+while True:
     logs = read_logs()
 
-    normal_logs = []
-    alerts = []
+    new_logs = []
 
     for line in logs:
-        if "FAILED" in line:
-            alerts.append(f"{line}")
+        line = line.strip()
+        if line not in st.session_state.seen_logs:
+            new_logs.append(line)
+            st.session_state.seen_logs.add(line)
+
+    alerts = []
+    normal_logs = []
+
+    for line in new_logs:
+        if "ALERT" in line or "FAILED" in line:
+            alerts.append(line)
         else:
             normal_logs.append(line)
 
-    placeholder.empty()
-
+    # ---------------- UI ----------------
     st.subheader("Alerts")
     for a in alerts:
         st.error(a)
 
-    st.subheader("Normal Logs")
+    st.subheader("✅ Normal Logs")
     for n in normal_logs:
         st.text(n)
 
     time.sleep(2)
+    st.rerun()
