@@ -1,14 +1,21 @@
 import streamlit as st
 import os
 from collections import Counter
-import time
+from streamlit_autorefresh import st_autorefresh
 
 LOG_FILE = "server.log"
 
-st.set_page_config(page_title="ML IDS Dashboard", page_icon="🛡️", layout="wide")
+st.set_page_config(
+    page_title="ML IDS Dashboard",
+    page_icon="🛡️",
+    layout="wide"
+)
 
-st.title("ML Intrusion Detection Dashboard")
+st.title("🛡️ ML Intrusion Detection Dashboard")
 st.markdown("Real-time monitoring with AI-based attack detection")
+
+# ---------------- AUTO REFRESH ----------------
+st_autorefresh(interval=2000, key="refresh")
 
 # ---------------- SESSION STATE ----------------
 if "seen_logs" not in st.session_state:
@@ -21,27 +28,16 @@ def read_logs():
     with open(LOG_FILE, "r") as f:
         return f.readlines()[-100:]
 
-# ---------------- AUTO REFRESH ----------------
-st_autorefresh = st.empty()
-time.sleep(2)
-st.rerun()
-
-# ---------------- PROCESS LOGS ----------------
 logs = read_logs()
 
-new_logs = []
-
-for line in logs:
-    line = line.strip()
-    if line not in st.session_state.seen_logs:
-        new_logs.append(line)
-        st.session_state.seen_logs.add(line)
-
+# ---------------- PROCESS LOGS ----------------
 alerts = []
 normal_logs = []
 ips = []
 
-for line in new_logs:
+for line in logs:
+    line = line.strip()
+
     if "IP=" in line:
         ip = line.split("IP=")[-1].split()[0]
         ips.append(ip)
@@ -54,31 +50,37 @@ for line in new_logs:
 # ---------------- METRICS ----------------
 col1, col2, col3 = st.columns(3)
 
-col1.metric("Alerts", len(alerts))
-col2.metric("Normal Logs", len(normal_logs))
-col3.metric("Unique IPs", len(set(ips)))
+col1.metric("🚨 Alerts", len(alerts))
+col2.metric("✅ Normal Logs", len(normal_logs))
+col3.metric("🌐 Unique IPs", len(set(ips)))
 
 st.divider()
 
 # ---------------- CHART ----------------
-st.subheader("Top Attacker IPs")
+st.subheader("📊 Top Attacker IPs")
 
 if ips:
     st.bar_chart(Counter(ips))
 else:
-    st.write("No data yet...")
+    st.info("No data yet...")
 
 st.divider()
 
-# ---------------- LOG DISPLAY ----------------
+# ---------------- DISPLAY ----------------
 colA, colB = st.columns(2)
 
 with colA:
-    st.subheader("Alerts")
-    for a in alerts[-10:]:
-        st.error(a)
+    st.subheader("🚨 Alerts")
+    if alerts:
+        for a in alerts[-10:]:
+            st.error(a)
+    else:
+        st.success("No alerts detected")
 
 with colB:
-    st.subheader("Recent Logs")
-    for n in normal_logs[-10:]:
-        st.text(n)
+    st.subheader("📜 Recent Logs")
+    if normal_logs:
+        for n in normal_logs[-10:]:
+            st.text(n)
+    else:
+        st.info("No logs available")
