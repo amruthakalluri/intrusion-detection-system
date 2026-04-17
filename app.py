@@ -4,7 +4,7 @@ import os
 from collections import Counter
 
 from streamlit_autorefresh import st_autorefresh
-st_autorefresh(interval=2000)
+st_autorefresh(interval=2000000000000)
 
 LOG_FILE = "server.log"
 
