@@ -25,30 +25,31 @@ def read_logs():
         return f.readlines()[-100:]
 
 # ---------------- MAIN LOOP ----------------
+# ---------------- MAIN LOOP ----------------
 
-    logs = read_logs()
+logs = read_logs()
 
-    new_logs = []
+new_logs = []
 
-    for line in logs:
-        line = line.strip()
-        if line not in st.session_state.seen_logs:
-            new_logs.append(line)
-            st.session_state.seen_logs.add(line)
+for line in logs:
+    line = line.strip()
+    if line not in st.session_state.seen_logs:
+        new_logs.append(line)
+        st.session_state.seen_logs.add(line)
 
-    alerts = []
-    normal_logs = []
-    ips = []
+alerts = []
+normal_logs = []
+ips = []
 
-    for line in new_logs:
-        if "IP=" in line:
-            ip = line.split("IP=")[-1].split()[0]
-            ips.append(ip)
+for line in new_logs:
+    if "IP=" in line:
+        ip = line.split("IP=")[-1].split()[0]
+        ips.append(ip)
 
-        if "ALERT" in line or "FAILED" in line:
-            alerts.append(line)
-        else:
-            normal_logs.append(line)
+    if "ALERT" in line or "FAILED" in line:
+        alerts.append(line)
+    else:
+        normal_logs.append(line)
 
     # ---------------- METRICS ----------------
     col1, col2, col3 = st.columns(3)
