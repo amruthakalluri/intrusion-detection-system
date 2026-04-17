@@ -3,9 +3,6 @@ import time
 import os
 from collections import Counter
 
-from streamlit_autorefresh import st_autorefresh
-st_autorefresh(interval=2000000000000)
-
 LOG_FILE = "server.log"
 
 st.set_page_config(page_title="ML IDS Dashboard", page_icon="🛡️", layout="wide")
